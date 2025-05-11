@@ -72,4 +72,7 @@ public:
 	afx_msg void OnBnClickedButtonUpdateEmployee();
 	afx_msg void OnBnClickedButtonDeleteNumber();
 	afx_msg void OnBnClickedButtonUpadteNumber();
+	CStatic m_staicCountPM;
+	CStatic m_staticCountTL;
+	CStatic m_staticCountSD;
 };

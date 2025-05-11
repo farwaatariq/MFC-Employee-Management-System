@@ -5,7 +5,9 @@
 CEmployee::CEmployee() {
 	this->m_id = std::rand() % 101;
 	this->m_initial = "";
-	this->m_fullName = "";
+	this->m_firstName = "";
+	this->m_middleName = "";
+	this->m_lastName = "";
 	this->m_gender = "";
 	this->m_age = 0;
 	this->m_dob = "";
@@ -26,12 +28,13 @@ std::string CEmployee::GetString() {
 
 	std::string str = "--EMPLOYEE--";
 	str += "\nID: " + std::to_string(m_id);
-	str += "\nFull name: " + m_initial + " " + m_fullName;
+	str += "\nFull name: " + m_initial + " " + m_firstName + " " + m_middleName + " " + m_lastName;
 	str += "\nGender: " + m_gender;
 	str += "\nAge: " + std::to_string(m_age);
 	str += "\nDate of Birth: " + m_dob;
 	str += "\nDesignation: " + m_designation;
 	str += "\nRoles: " + m_roles;
+	str += "\nType: " + this->GetType();
 	str += "\n\n--TEAMS--: ";
 	/*for (int i = 0; i < m_teamCount ; i++) {
 		str+= "\n" + m_pTeams[i].GetString();
@@ -81,7 +84,19 @@ int CEmployee::GetID() const {
 }
 
 std::string CEmployee::GetFullName() const {
-	return this->m_fullName;
+	return m_firstName + " " + m_middleName + " " + m_lastName;
+}
+
+std::string CEmployee::GetFirstName() const {
+	return this->m_firstName;
+}
+
+std::string CEmployee::GetMiddleName() const {
+	return this->m_middleName;
+}
+
+std::string CEmployee::GetLastName() const {
+	return this->m_lastName;
 }
 
 std::string CEmployee::GetGender() const {
@@ -124,8 +139,20 @@ void CEmployee::SetInitial(const std::string& initial) {
 	this->m_initial = initial;
 }
 
-void CEmployee::SetFullName(const std::string& fullName) {
-	this->m_fullName = fullName;
+//void CEmployee::SetFullName(const std::string& fullName) {
+//	this->m_fullName = fullName;
+//}
+
+void CEmployee::SetFirstName(const std::string& firstName) {
+	this->m_firstName = firstName;
+}
+
+void CEmployee::SetMiddleName(const std::string& middleName) {
+	this->m_middleName = middleName;
+}
+
+void CEmployee::SetLastName(const std::string& lastName) {
+	this->m_lastName = lastName;
 }
 
 void CEmployee::SetGender(const std::string& gender) {
@@ -155,5 +182,3 @@ void CEmployee::SetRoles(const std::string& roles) {
 void CEmployee::SetTeams(CTeam* teams) {
 	m_pTeams = teams;
 }
-
-//CEmployee::CEmployee(int id, const std::string& fullName, const std::string& gender, int age, const std::string& DOB, const std::vector<CPhone>& phones, const std::string& designation, int teamSize): m_id(id), m_fullName(fullName), m_gender(gender), m_age(age), m_DOB(DOB), m_vecPhone(phones), m_designation(designation){}

@@ -203,6 +203,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TeamLead.h" />
+    <ClInclude Include="Validator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Employee.cpp" />
@@ -222,6 +223,7 @@
     </ClCompile>
     <ClCompile Include="PhoneNumberDlg.cpp" />
     <ClCompile Include="TeamLead.cpp" />
+    <ClCompile Include="Validator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EmployeeManagementSystem.rc" />

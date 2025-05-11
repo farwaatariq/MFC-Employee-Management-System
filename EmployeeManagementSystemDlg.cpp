@@ -17,6 +17,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "Validator.h"
 
 
 // CAboutDlg dialog used for App About
@@ -86,6 +87,9 @@ void CEmployeeManagementSystemDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK_AEW, m_checkAEW);
 	DDX_Control(pDX, IDC_CHECK_GBADS, m_checkGBADS);
 	DDX_Control(pDX, IDC_CHECK_IG, m_checkIG);
+	DDX_Control(pDX, IDC_STATIC_PROJECT_MANAGER, m_staicCountPM);
+	DDX_Control(pDX, IDC_STATIC_TEAM_LEADER, m_staticCountTL);
+	DDX_Control(pDX, IDC_STATIC_SOFTWARE_DEVELOPER, m_staticCountSD);
 }
 
 BEGIN_MESSAGE_MAP(CEmployeeManagementSystemDlg, CDialogEx)
@@ -169,6 +173,9 @@ BOOL CEmployeeManagementSystemDlg::OnInitDialog()
 	m_comboDesignation.AddString(_T("Software Developer"));
 	//default selection
 	m_comboDesignation.SetCurSel(-1);
+
+	//setting one checked for gender.
+	m_radioMale.SetCheck(BST_CHECKED);
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -331,9 +338,27 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonAddEmployee()
 
 	//names
 	m_editFirstName.GetWindowText(firstName);
+	if (!CValidator::IsNotEmpty(std::string(CT2A(firstName)))) {
+		AfxMessageBox(_T("First name cannot be empty."));
+		return;
+	}
+
+	if (!CValidator::IsAlphaOnly(std::string(CT2A(firstName)))) {
+		AfxMessageBox(_T("First name must contain only letters."));
+		return;
+	}
 	m_editMiddleName.GetWindowText(middleName);
 	m_editLastName.GetWindowText(lastName);
-	CString fullName = firstName + " " + middleName + " " + lastName;
+	if (!CValidator::IsNotEmpty(std::string(CT2A(lastName)))) {
+		AfxMessageBox(_T("Last name cannot be empty."));
+		return;
+	}
+
+	if (!CValidator::IsAlphaOnly(std::string(CT2A(lastName)))) {
+		AfxMessageBox(_T("Last name must contain only letters."));
+		return;
+	}
+	// CString fullName = firstName + " " + middleName + " " + lastName;
 
 	//gender
 	gender = GetSelectedGender();
@@ -351,7 +376,10 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonAddEmployee()
 	//setters
 
 	tempEmp->SetInitial(std::string(CT2A(initial)));
-	tempEmp->SetFullName(std::string(CT2A(fullName)));
+	// tempEmp->SetFullName(std::string(CT2A(fullName)));
+	tempEmp->SetFirstName(std::string(CT2A(firstName)));
+	tempEmp->SetMiddleName(std::string(CT2A(middleName)));
+	tempEmp->SetLastName(std::string(CT2A(lastName)));
 	tempEmp->SetGender(std::string(CT2A(gender)));
 	int ageValue = _ttoi(age);
 	tempEmp->SetAge(ageValue);
@@ -359,6 +387,18 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonAddEmployee()
 	tempEmp->SetRoles((tempEmp->GetRoles()));
 	tempEmp->SetTeamCount(count);                                                           
 	tempEmp->SetTeams(selectedTeam);
+
+	if (count == 0) {
+		AfxMessageBox(_T("Select atleast one team"));
+		return;
+	}
+
+	//phone number vector validation
+	int phoneCount = tempEmp->GetPhones().size();
+	if (phoneCount == 0) {
+		AfxMessageBox(_T("Please add at least one phone number."));
+		return;
+	}
 
 	CEmployeeManager::GetInstance()->Add(tempEmp);
 	MessageBox(CString(tempEmp->GetString().c_str()));
@@ -383,6 +423,7 @@ void CEmployeeManagementSystemDlg::PopulateEmployeesList() {
 		CString strGender = CString(pEmployee->GetGender().c_str());
 		CString strAge = CString(std::to_string(pEmployee->GetAge()).c_str());
 		CString strDOB = CString(pEmployee->GetDOB().c_str());
+
 		CString strPhones;
 		std::vector<CPhone> tempVecPhones = pEmployee->GetPhones();
 		for (CPhone phone : tempVecPhones) {
@@ -390,6 +431,7 @@ void CEmployeeManagementSystemDlg::PopulateEmployeesList() {
 		}
 		CString strDesignation = CString(pEmployee->GetDesignation().c_str());
 		CString strRoles = CString(pEmployee->GetRoles().c_str());
+
 		CString strTeams;
 		CTeam* pTeams = pEmployee->GetTeams();
 		int teamSize = pEmployee->GetTeamCount();
@@ -409,6 +451,14 @@ void CEmployeeManagementSystemDlg::PopulateEmployeesList() {
 
 		++index;
 	}
+
+	//also set dynamic type-counts
+	CString countPM = CString(std::to_string(CEmployeeManager::GetInstance()->GetProjectManagerCount()).c_str());
+	CString countTL = CString(std::to_string(CEmployeeManager::GetInstance()->GetTeamLeadCount()).c_str());
+	CString countSD = CString(std::to_string(CEmployeeManager::GetInstance()->GetSoftwareManagerCount()).c_str());
+	m_staicCountPM.SetWindowText(countPM);
+	m_staticCountTL.SetWindowText(countTL);
+	m_staticCountSD.SetWindowText(countSD);
 }
 
 void CEmployeeManagementSystemDlg::OnBnClickedButtonClear()
@@ -419,6 +469,8 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonClear()
 
 void CEmployeeManagementSystemDlg::OnLvnItemchangedListEmployees(NMHDR* pNMHDR, LRESULT* pResult)
 {
+	//disable the add button.
+	GetDlgItem(IDC_BUTTON_ADD_EMPLOYEE)->EnableWindow(FALSE);
 	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
 	int selected = m_listEmployees.GetSelectionMark();
@@ -431,7 +483,9 @@ void CEmployeeManagementSystemDlg::OnLvnItemchangedListEmployees(NMHDR* pNMHDR, 
 
 		//getting all the attributes from the selected object.
 		CString initial = CString(tempEmp->GetInitial().c_str());
-		CString fullName = CString(tempEmp->GetFullName().c_str());
+		CString firstName = CString(tempEmp->GetFirstName().c_str());
+		CString middleName = CString(tempEmp->GetMiddleName().c_str());
+		CString lastName = CString(tempEmp->GetLastName().c_str());
 		CString gender = CString(tempEmp->GetGender().c_str());
 		CString ageStr = CString(std::to_string(tempEmp->GetAge()).c_str());
 		CString dob = CString(tempEmp->GetDOB().c_str());
@@ -441,27 +495,14 @@ void CEmployeeManagementSystemDlg::OnLvnItemchangedListEmployees(NMHDR* pNMHDR, 
 		CTeam* teams = tempEmp->GetTeams();
 		int teamCount = tempEmp->GetTeamCount();
 
-		// Split full name
-		std::vector<CString> nameParts;
-		CString token;
-		int curPos = 0;
-		token = fullName.Tokenize(_T(" "), curPos);
-		while (!token.IsEmpty())
-		{
-			nameParts.push_back(token);
-			token = fullName.Tokenize(_T(" "), curPos);
-		}
-
-		if (nameParts.size() >= 2)
-		{
-			m_editFirstName.SetWindowText(nameParts[0]);
-			m_editMiddleName.SetWindowText(nameParts[1]);
-			m_editLastName.SetWindowText(nameParts[2]);
-		}
-		
+		//populate name fields
+		m_editFirstName.SetWindowText(firstName);
+		m_editMiddleName.SetWindowText(middleName);
+		m_editLastName.SetWindowText(lastName);
 
 		m_editAge.SetWindowText(ageStr);
 		m_dateTimeDOB.SetWindowText(dob);
+
 		//populating phone number in the list cntrl.
 		m_listPhoneNumbers.DeleteAllItems();
 		int phoneIndex = 0;
@@ -478,6 +519,7 @@ void CEmployeeManagementSystemDlg::OnLvnItemchangedListEmployees(NMHDR* pNMHDR, 
 
 			++phoneIndex;
 		}
+
 		//initial combobox
 		if (initial == "Mr") {
 			m_comboInitial.SetCurSel(0);
@@ -586,7 +628,7 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonUpdateEmployee()
 		int id = _ttoi(strId);
 
 		// CEmployee* newEmp = CEmployeeFactory::createEmployee(type);
-		CString initial, firstName, middleName, lastName, fullName, gender, age, dob, designation;
+		CString initial, firstName, middleName, lastName, gender, age, dob, designation;
 		CTeam* team;
 		std::vector<CPhone> newPhones;
 
@@ -595,7 +637,7 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonUpdateEmployee()
 		m_editFirstName.GetWindowText(firstName);
 		m_editMiddleName.GetWindowText(middleName);
 		m_editLastName.GetWindowText(lastName);
-		fullName = firstName + " " + middleName + " " + lastName;
+		// fullName = firstName + " " + middleName + " " + lastName;
 		gender = GetSelectedGender();
 		m_editAge.GetWindowTextW(age);
 		int ageValue = _ttoi(age);
@@ -628,7 +670,9 @@ void CEmployeeManagementSystemDlg::OnBnClickedButtonUpdateEmployee()
 
 		// Copy all fields to newEmp
 		newEmp->SetInitial(std::string(CT2A(initial)));
-		newEmp->SetFullName(std::string(CT2A(fullName)));
+		newEmp->SetFirstName(std::string(CT2A(firstName)));
+		newEmp->SetMiddleName(std::string(CT2A(middleName)));
+		newEmp->SetLastName(std::string(CT2A(lastName)));
 		newEmp->SetGender(std::string(CT2A(gender)));
 		newEmp->SetAge(ageValue);
 		newEmp->SetDOB(std::string(CT2A(dob)));

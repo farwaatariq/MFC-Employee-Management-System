@@ -9,7 +9,10 @@ class CEmployee
 private:
 	int m_id;
 	std::string m_initial;
-	std::string m_fullName;
+	// std::string m_fullName;
+	std::string m_firstName;
+	std::string m_middleName;
+	std::string m_lastName;
 	std::string m_gender;
 	int m_age;
 	std::string m_dob;
@@ -36,6 +39,9 @@ public:
 	int GetID() const;
 	std::string GetInitial() const;
 	std::string GetFullName() const;
+	std::string GetFirstName() const;
+	std::string GetMiddleName() const;
+	std::string GetLastName() const;
 	std::string GetGender() const;
 	int GetAge() const;
 	std::string GetDOB() const;
@@ -46,7 +52,10 @@ public:
 	int GetTeamCount() const;
 	void SetTeamCount(int count);
 	void SetInitial(const std::string& initial);
-	void SetFullName(const std::string& fullName);
+	// void SetFullName(const std::string& first);
+	void SetFirstName(const std::string& firstName);
+	void SetMiddleName(const std::string& middleName);
+	void SetLastName(const std::string& lastName);
 	void SetGender(const std::string& gender);
 	void SetAge(int age);
 	void SetDOB(const std::string& DOB);
